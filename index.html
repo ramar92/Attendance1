@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0f1e;
+      --surface: #111827;
+      --card: #161d2f;
+      --accent1: #6c63ff;
+      --accent2: #00d4ff;
+      --accent3: #ff6b9d;
+      --gold: #f5c518;
+      --text: #e8eaf6;
+      --muted: #8892a4;
+      --border: rgba(108,99,255,0.2);
+      --glow: 0 0 40px rgba(108,99,255,0.3);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated background mesh */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(108,99,255,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(0,212,255,0.1) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(255,107,157,0.05) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Grid overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(108,99,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108,99,255,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px 60px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 36px;
+      animation: fadeDown 0.7s ease both;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-icon {
+      width: 46px; height: 46px;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 0 20px rgba(108,99,255,0.5);
+    }
+
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .badge {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(0,212,255,0.1);
+      border: 1px solid rgba(0,212,255,0.25);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      color: var(--accent2);
+      font-weight: 500;
+    }
+
+    .badge .dot {
+      width: 7px; height: 7px;
+      background: var(--accent2);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    /* ── STAT CARDS ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+      animation: fadeUp 0.7s ease 0.1s both;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--glow);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    .stat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent1), var(--accent2)); }
+    .stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--accent2), #00ff9f); }
+    .stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--accent3), var(--gold)); }
+    .stat-card:nth-child(4)::before { background: linear-gradient(90deg, var(--gold), var(--accent1)); }
+
+    .stat-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .stat-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat-change {
+      position: absolute;
+      top: 22px; right: 18px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+
+    .up { background: rgba(0,255,159,0.12); color: #00ff9f; }
+    .down { background: rgba(255,107,157,0.12); color: var(--accent3); }
+
+    /* ── MAIN CONTENT ── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 24px;
+      animation: fadeUp 0.7s ease 0.2s both;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-title span { font-size: 18px; }
+
+    .panel-action {
+      font-size: 12px;
+      color: var(--accent1);
+      cursor: pointer;
+      border: 1px solid rgba(108,99,255,0.3);
+      padding: 5px 12px;
+      border-radius: 20px;
+      transition: all 0.2s;
+    }
+
+    .panel-action:hover {
+      background: rgba(108,99,255,0.15);
+    }
+
+    /* Iframe */
+    .iframe-wrap {
+      position: relative;
+      width: 100%;
+      height: 520px;
+    }
+
+    .iframe-wrap iframe {
+      width: 100%; height: 100%;
+      border: none;
+      display: block;
+    }
+
+    .iframe-overlay-label {
+      position: absolute;
+      bottom: 12px; left: 12px;
+      background: rgba(10,15,30,0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 11px;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    /* Side panel */
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .info-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .info-card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .state-list { list-style: none; }
+
+    .state-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 13px;
+    }
+
+    .state-item:last-child { border-bottom: none; }
+
+    .state-bar-wrap {
+      flex: 1;
+      margin: 0 12px;
+      height: 4px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .state-bar {
+      height: 100%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    }
+
+    .state-pct {
+      font-size: 12px;
+      color: var(--accent2);
+      font-weight: 600;
+      min-width: 36px;
+      text-align: right;
+    }
+
+    /* AI Insight card */
+    .insight-card {
+      background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,212,255,0.08));
+      border: 1px solid rgba(108,99,255,0.3);
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .insight-card::before {
+      content: '✦';
+      position: absolute;
+      top: -10px; right: -10px;
+      font-size: 80px;
+      opacity: 0.04;
+      color: var(--accent1);
+    }
+
+    .insight-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent1);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .insight-text {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .insight-text strong { color: var(--text); }
+
+    /* ── FOOTER ── */
+    footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      animation: fadeUp 0.7s ease 0.4s both;
+    }
+
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--accent2); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 500px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .logo-sub { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">📊</div>
+      <div>
+        <div class="logo-text">DataPulse AI</div>
+        <div class="logo-sub">Analytics Dashboard</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="badge"><span class="dot"></span> Live Data</div>
+      <div class="badge" style="border-color:rgba(108,99,255,0.3);color:var(--accent1);background:rgba(108,99,255,0.1);">🤖 AI Ready</div>
+    </div>
+  </header>
+
+  <!-- STAT CARDS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="stat-icon">🎓</span>
+      <div class="stat-value" style="background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">12</div>
+      <div class="stat-label">States Covered</div>
+      <span class="stat-change up">↑ 3 new</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">👩‍🏫</span>
+      <div class="stat-value" style="background:linear-gradient(90deg,var(--accent2),#00ff9f);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">48</div>
+      <div class="stat-label">Faculty Members</div>
+      <span class="stat-change up">↑ 12%</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">📈</span>
+      <div class="stat-value" style="background:linear-gradient(90deg,var(--accent3),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">84%</div>
+      <div class="stat-label">Avg Attendance</div>
+      <span class="stat-change down">↓ 2%</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">🏆</span>
+      <div class="stat-value" style="background:linear-gradient(90deg,var(--gold),var(--accent1));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Gujarat</div>
+      <div class="stat-label">Top State</div>
+      <span class="stat-change up">↑ #1</span>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- Power BI Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><span>📊</span> Attendance by State &amp; Faculty</div>
+        <div class="panel-action">Full Screen ↗</div>
+      </div>
+      <div class="iframe-wrap">
+        <iframe
+          src="https://app.powerbi.com/reportEmbed?reportId=15d22c1e-8873-4ff8-950f-586270ecbbbf&autoAuth=true&ctid=aed43286-0f66-47d6-942b-d31a4b8addca"
+          allowFullScreen>
+        </iframe>
+        <div class="iframe-overlay-label">🔒 Secured · Power BI Embedded</div>
+      </div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="side-panel">
+
+      <!-- Top States -->
+      <div class="info-card">
+        <div class="info-card-title">🗺️ Top States</div>
+        <ul class="state-list">
+          <li class="state-item">
+            <span>Gujarat</span>
+            <div class="state-bar-wrap"><div class="state-bar" style="width:95%"></div></div>
+            <span class="state-pct">95%</span>
+          </li>
+          <li class="state-item">
+            <span>Maharashtra</span>
+            <div class="state-bar-wrap"><div class="state-bar" style="width:82%"></div></div>
+            <span class="state-pct">82%</span>
+          </li>
+          <li class="state-item">
+            <span>Uttar Pradesh</span>
+            <div class="state-bar-wrap"><div class="state-bar" style="width:70%"></div></div>
+            <span class="state-pct">70%</span>
+          </li>
+          <li class="state-item">
+            <span>Tamil Nadu</span>
+            <div class="state-bar-wrap"><div class="state-bar" style="width:65%"></div></div>
+            <span class="state-pct">65%</span>
+          </li>
+          <li class="state-item">
+            <span>Karnataka</span>
+            <div class="state-bar-wrap"><div class="state-bar" style="width:58%"></div></div>
+            <span class="state-pct">58%</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- AI Insight -->
+      <div class="insight-card">
+        <div class="insight-title">✦ AI Insight</div>
+        <div class="insight-text">
+          <strong>Gujarat leads</strong> with the highest sum of attendance % across all faculty. 
+          <strong>Punjab</strong> shows the lowest engagement — consider targeted interventions. 
+          Ask the chatbot below for deeper analysis! 💬
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="info-card">
+        <div class="info-card-title">⚡ Quick Actions</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button onclick="alert('Exporting report…')" style="background:linear-gradient(135deg,var(--accent1),var(--accent2));border:none;color:#fff;padding:11px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .2s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">📥 Export Report</button>
+          <button onclick="location.reload()" style="background:transparent;border:1px solid var(--border);color:var(--text);padding:11px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(108,99,255,0.1)'" onmouseout="this.style.background='transparent'">🔄 Refresh Data</button>
+          <button onclick="alert('Scheduling report…')" style="background:transparent;border:1px solid var(--border);color:var(--text);padding:11px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(108,99,255,0.1)'" onmouseout="this.style.background='transparent'">📅 Schedule Report</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>© 2026 DataPulse AI · Built with Power BI &amp; Botpress</div>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Docs</a>
+      <a href="#">Support</a>
+    </div>
+  </footer>
+
+</div>
+
+<!-- Botpress Chatbot -->
+<script src="https://cdn.botpress.cloud/webchat/v3.6/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2026/04/12/07/20260412072151-KXP1Q509.js" defer></script>
+
+</body>
+</html>
